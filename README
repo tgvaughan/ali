@@ -1,0 +1,11 @@
+ali
+---
+
+Ali provides some basic command-line sequence alignment manipulation
+tools using Biopython:
+
+      * format conversion
+      * sequence label modification
+      * alignment summaries
+
+By default, all output is sent to standard out, and FASTA format is used.
