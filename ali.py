@@ -34,6 +34,8 @@ def repname(args):
         align = AlignIO.read(infile, args.format)
         for record in align:
             record.id = p.sub(args.replacement, record.id)
+            record.name = record.id
+            record.description = record.id
 
         print(format(align, args.output_format), file=args.output)
         
