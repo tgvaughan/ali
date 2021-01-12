@@ -12,20 +12,25 @@ def cat(args):
         
 def summary(args):
     """Print summary of alignment contents."""
+    total_seq_count = 0
     for infile in args.files:
         align = AlignIO.read(infile, args.format)
+        total_seq_count += len(align)
+
         print("{name}: {nseqs} sequences of length {length}".format(
             name=infile.name,
             nseqs=len(align),
             length=align.get_alignment_length()),
               file=args.output)
+    if len(args.files)>1:
+        print("--- Total sequence count: {} ---".format(total_seq_count))
 
 def names(args):
     """Print names of sequences in alignment."""
-    align = AlignIO.read(args.file, args.format)
-    for record in align:
-        print(record.id, file=args.output)
-
+    for infile in args.files:
+        align = AlignIO.read(infile, args.format)
+        for record in align:
+            print(record.id, file=args.output)
 
 def repname(args):
     """Replace patterns in sequence names."""
@@ -64,9 +69,9 @@ if __name__ == '__main__':
                             help="One or more alignments to summarize.")
     parser_summary.set_defaults(func=summary)
 
-    parser_names = subparsers.add_parser('names', help="List names of sequences in alignment.")
-    parser_names.add_argument('file', nargs='?', default=stdin, type=FileType('r'),
-                            help="Alignment file to read.")
+    parser_names = subparsers.add_parser('names', help="List names of sequences in alignments.")
+    parser_names.add_argument('files', nargs='*', default=[stdin], type=FileType('r'),
+                            help="Alignment files to read.")
     parser_names.set_defaults(func=names)
 
     parser_repname = subparsers.add_parser('repname', help="Replace string in names.")
