@@ -43,13 +43,25 @@ def repname(args):
             record.description = record.id
 
         print(format(align, args.output_format), file=args.output)
-        
+
+def grep(args):
+    """Select sequences with pattern in name."""
+    p = re.compile(args.pattern)
+    if args.invert:
+        pred = lambda s: p.search(s.id) == None
+    else:
+        pred = lambda s: p.search(s.id) != None
+    
+    for infile in args.files:
+        align = AlignIO.read(infile, args.format)
+        filtered = AlignIO.MultipleSeqAlignment(filter(pred, align))
+        print(format(filtered, args.output_format), file=args.output)
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Sequence file manipulation tool.')
 
     parser.add_argument('-f', '--format', dest="format", default='fasta', type=str,
-                        help="Input format for sequences.")
+                        help="Input format for sequences. (Default fasta.)")
 
     parser.add_argument('-t', '--output_format', dest="output_format", default='fasta', type=str,
                         help="Format used for output alignment (where applicable).")
@@ -79,6 +91,12 @@ if __name__ == '__main__':
     parser_repname.add_argument('replacement', type=str, help="Replacement string")
     parser_repname.add_argument('files', nargs='*', default=[stdin], type=FileType('r'))
     parser_repname.set_defaults(func=repname)
+
+    parser_grep = subparsers.add_parser('grep', help="Find sequences with matching names.")
+    parser_grep.add_argument('pattern', type=str, help="Pattern to find")
+    parser_grep.add_argument('files', nargs='*', default=[stdin], type=FileType('r'))
+    parser_grep.add_argument('-v', dest='invert', action='store_true', help="Invert search.")
+    parser_grep.set_defaults(func=grep)
 
     args = parser.parse_args()
     args.func(args)
