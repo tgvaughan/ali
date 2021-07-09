@@ -30,7 +30,7 @@ def names(args):
     for infile in args.files:
         align = AlignIO.read(infile, args.format)
         for record in align:
-            print(record.id, file=args.output)
+            print(record.description, file=args.output)
 
 def repname(args):
     """Replace patterns in sequence names."""
@@ -38,9 +38,9 @@ def repname(args):
     for infile in args.files:
         align = AlignIO.read(infile, args.format)
         for record in align:
-            record.id = p.sub(args.replacement, record.id)
-            record.name = record.id
-            record.description = record.id
+            record.description = p.sub(args.replacement, record.description)
+            record.name = record.description
+            record.id = record.description
 
         print(format(align, args.output_format), file=args.output)
 
