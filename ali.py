@@ -5,6 +5,8 @@ from argparse import ArgumentParser, FileType
 from sys import stdin, stdout
 import re
 
+from random import sample
+
 def cat(args):
     """Concatenate sequences and print in fasta format."""
     for infile in args.files:
@@ -57,6 +59,13 @@ def grep(args):
         filtered = AlignIO.MultipleSeqAlignment(filter(pred, align))
         print(format(filtered, args.output_format), file=args.output)
 
+def subsample(args):
+    """Sample sequences with replacement."""
+    sequences = sum([list(AlignIO.read(infile, args.format)) for infile in args.files], [])
+    count = min(args.count, len(sequences))
+    output_alignment = AlignIO.MultipleSeqAlignment(sample(sequences, count))
+    print(format(output_alignment, args.output_format), file=args.output)
+
 if __name__ == '__main__':
     parser = ArgumentParser(description='Sequence file manipulation tool.')
 
@@ -97,6 +106,12 @@ if __name__ == '__main__':
     parser_grep.add_argument('files', nargs='*', default=[stdin], type=FileType('r'))
     parser_grep.add_argument('-v', dest='invert', action='store_true', help="Invert search.")
     parser_grep.set_defaults(func=grep)
+
+    parser_subsample = subparsers.add_parser('subsample', help="Subsample alignment.")
+    parser_subsample.add_argument('count', type=int, help="Number of sequences to sample")
+    parser_subsample.add_argument('files', nargs='*', default=[stdin], type=FileType('r'))
+    parser_subsample.add_argument('with-replacement', action='store_true', help='Sample with replacement.')
+    parser_subsample.set_defaults(func=subsample)
 
     args = parser.parse_args()
     args.func(args)
