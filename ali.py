@@ -34,7 +34,7 @@ def names(args):
         for record in align:
             print(record.description, file=args.output)
 
-def repname(args):
+def rename(args):
     """Replace patterns in sequence names."""
     p = re.compile(args.pattern)
     for infile in args.files:
@@ -42,7 +42,7 @@ def repname(args):
         for record in align:
             record.description = p.sub(args.replacement, record.description)
             record.name = record.description
-            record.id = record.description
+            record.id = ""
 
         print(format(align, args.output_format), file=args.output)
 
@@ -95,11 +95,11 @@ if __name__ == '__main__':
                             help="Alignment files to read.")
     parser_names.set_defaults(func=names)
 
-    parser_repname = subparsers.add_parser('repname', help="Replace string in names.")
-    parser_repname.add_argument('pattern', type=str, help="Pattern to replace")
-    parser_repname.add_argument('replacement', type=str, help="Replacement string")
-    parser_repname.add_argument('files', nargs='*', default=[stdin], type=FileType('r'))
-    parser_repname.set_defaults(func=repname)
+    parser_rename = subparsers.add_parser('rename', help="Replace string in names.")
+    parser_rename.add_argument('pattern', type=str, help="Pattern to replace")
+    parser_rename.add_argument('replacement', type=str, help="Replacement string")
+    parser_rename.add_argument('files', nargs='*', default=[stdin], type=FileType('r'))
+    parser_rename.set_defaults(func=rename)
 
     parser_grep = subparsers.add_parser('grep', help="Find sequences with matching names.")
     parser_grep.add_argument('pattern', type=str, help="Pattern to find")
