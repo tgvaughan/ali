@@ -59,6 +59,16 @@ def grep(args):
         filtered = AlignIO.MultipleSeqAlignment(filter(pred, align))
         print(format(filtered, args.output_format), file=args.output)
 
+def fgrep(args):
+    """Select sequences with name any of patterns read from file."""
+    patterns = [l.strip() for l in args.pattern_file]
+    pred = lambda s: any([p in s.id for p in patterns])
+
+    for infile in args.files:
+        align = AlignIO.read(infile, args.format)
+        filtered = AlignIO.MultipleSeqAlignment(filter(pred, align))
+        print(format(filtered, args.output_format), file=args.output)
+
 def subsample(args):
     """Sample sequences with replacement."""
     sequences = sum([list(AlignIO.read(infile, args.format)) for infile in args.files], [])
@@ -74,6 +84,9 @@ if __name__ == '__main__':
 
     parser.add_argument('-t', '--output_format', dest="output_format", default='fasta', type=str,
                         help="Format used for output alignment (where applicable).")
+
+    parser.add_argument("-m", "--molecule_type", dest="molecule_type", default="DNA", type=str,
+                        help="Molecule type applied to output alignment if none specified in input.")
 
     parser.add_argument('-o', '--output', dest="output", default=stdout, type=FileType('w'),
                         help="Output file.")
@@ -107,10 +120,17 @@ if __name__ == '__main__':
     parser_grep.add_argument('-v', dest='invert', action='store_true', help="Invert search.")
     parser_grep.set_defaults(func=grep)
 
+    parser_grep = subparsers.add_parser('fgrep', help="Find sequences names matching any of the patterns from file.")
+    parser_grep.add_argument('pattern_file', type=FileType('r'),
+                             help="File containing (newline-delimited) patterns to find")
+    parser_grep.add_argument('files', nargs='*', default=[stdin], type=FileType('r'))
+    parser_grep.set_defaults(func=fgrep)
+
     parser_subsample = subparsers.add_parser('subsample', help="Subsample alignment.")
     parser_subsample.add_argument('count', type=int, help="Number of sequences to sample")
+    parser_subsample.add_argument('--with-replacement', action='store_true',
+                                  help='Sample with replacement.')
     parser_subsample.add_argument('files', nargs='*', default=[stdin], type=FileType('r'))
-    parser_subsample.add_argument('with-replacement', action='store_true', help='Sample with replacement.')
     parser_subsample.set_defaults(func=subsample)
 
     args = parser.parse_args()
